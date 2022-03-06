@@ -1,6 +1,6 @@
 {
   "name": "@yehonadav/yonadav-ssm-exporter",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "ssm client",
   "author": "yehonadav",
   "license": "Apache-2.0",
