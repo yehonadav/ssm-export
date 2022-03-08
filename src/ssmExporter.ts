@@ -40,6 +40,8 @@ export type ExportSSMParams<T=any> = {
   strategy:Strategy,
 }
 
+export type ExportSSM = <T=any>(props:ExportSSMParams<T>) => void;
+
 const createExporters = ({exportTo, strategy}:CreateExportersParams) => {
   return (typeof exportTo === 'string' ? [exportTo] : exportTo)
     .map(path => new EnvExporter(path, strategy));
@@ -60,7 +62,7 @@ export class SSMExporter implements ISSMExporter {
   };
 }
 
-export const exportSSM = async <T=any>({params, exportTo, strategy}:ExportSSMParams<T>) => {
+export const exportSSM:ExportSSM = ({params, exportTo, strategy}) => {
   const envExporters = createExporters({exportTo, strategy});
   envExporters.forEach(env=>env.export(params));
 }
