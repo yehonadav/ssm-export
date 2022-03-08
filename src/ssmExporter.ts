@@ -16,6 +16,8 @@ const exporter = new SSMExporter({
 await exporter.export()
  ***/
 
+type ExportTo = string[]|string;
+
 export interface ISSMExporter {
   // Updates .env files
   export():Promise<void>;
@@ -23,8 +25,24 @@ export interface ISSMExporter {
 
 export type SSMExporterParams = {
   token:string,
-  exportTo:string[]|string,
+  exportTo:ExportTo,
   strategy:Strategy,
+}
+
+export type CreateExportersParams = {
+  exportTo:ExportTo,
+  strategy:Strategy,
+}
+
+export type ExportSSMParams<T=any> = {
+  params:T,
+  exportTo:ExportTo,
+  strategy:Strategy,
+}
+
+const createExporters = ({exportTo, strategy}:CreateExportersParams) => {
+  return (typeof exportTo === 'string' ? [exportTo] : exportTo)
+    .map(path => new EnvExporter(path, strategy));
 }
 
 export class SSMExporter implements ISSMExporter {
@@ -33,12 +51,16 @@ export class SSMExporter implements ISSMExporter {
 
   constructor({token, exportTo, strategy}:SSMExporterParams) {
     this.ssmClient = new SSMClient(token);
-    this.envExporters = (typeof exportTo === 'string' ? [exportTo] : exportTo)
-                        .map(path => new EnvExporter(path, strategy));
+    this.envExporters = createExporters({exportTo, strategy});
   }
 
   export:ISSMExporter['export'] = async () => {
     const params = await this.ssmClient.get();
     this.envExporters.forEach(env=>env.export(params));
   };
+}
+
+export const exportSSM = async <T=any>({params, exportTo, strategy}:ExportSSMParams<T>) => {
+  const envExporters = createExporters({exportTo, strategy});
+  envExporters.forEach(env=>env.export(params));
 }
